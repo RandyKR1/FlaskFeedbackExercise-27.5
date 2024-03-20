@@ -36,6 +36,7 @@ def create_user():
         db.session.commit()
         flash(f'Welcome {new_user.username}! Thank you for joining us :)', 'success')
         session['user_id'] = new_user.id
+        return redirect(f'/users/{session["user_id"]}')
     
     return render_template('register.html', form=form)
 
