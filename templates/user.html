@@ -1,11 +1,43 @@
 {% extends 'base.html' %}
 
 {% block content %}
- You made it this far
+<h5> First Name: {{user.first_name}}</h5>
+<h5> Last Name: {{user.last_name}}</h5>
+<h5> Username: {{user.username}}</h5>
+<h5> email: {{user.email}}</h5>
+
+
+<ul>
+    {% for feedback in user.feedback %}
+   
+    <br>
+    <li>
+        {{feedback.username}}
+        <br>
+        {{feedback.title}} //{{feedback.content}}
+    </li>
+
+    <form>
+        {{form.hidden_tag()}}
+
+        <button class="btn btn-primary" formmethod="GET" formaction="/feedback/{{ feedback.id }}/update">
+          Edit
+        </button>
+        
+        <button class="btn btn-danger" formmethod="POST" formaction="/feedback/{{ feedback.id }}/delete">
+          Delete
+        </button>
+    
+    {% endfor %}
+</ul>
+
+<p>
+    <a href="/users/{{ user.id }}/feedback/new" class="btn btn-primary">Add Feedback</a>
+</p>
 
  <form>
     <button class="btn btn-danger btn-sm"
-            formaction="/users/{{ user.username }}/delete"
+            formaction="/users/{{ user.id }}/delete"
             formmethod="POST">
       Delete User
     </button>

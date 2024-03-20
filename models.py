@@ -14,6 +14,8 @@ class User(db.Model):
     username =  db.Column(db.String(20), nullable=False, unique=True)
     password =  db.Column(db.Text, nullable=False)
     
+    feedback = db.relationship("Feedback", backref="User", cascade="all,delete")
+    
     
     
     @classmethod
@@ -30,7 +32,18 @@ class User(db.Model):
             return u
         else:
             return False
-        
+
+
+class Feedback(db.Model):
+    __tablename__ = 'Feedback'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    title = db.Column(db.String(100), nullable = False)
+    content = db.Column(db.Text, nullable=False)
+    username = db.Column(
+                db.String(20),
+                db.ForeignKey('users.username'), 
+                nullable=False)
         
         
 def connect_db(app):

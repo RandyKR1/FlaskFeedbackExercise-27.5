@@ -1,7 +1,7 @@
 from flask import Flask, render_template, redirect, session, flash
 from flask_debugtoolbar import DebugToolbarExtension
-from models import connect_db, db, User
-from forms import UserForm, LoginForm, DeleteForm
+from models import connect_db, db, User, Feedback
+from forms import UserForm, LoginForm, DeleteForm, FeedbackForm
 # from sqlalchemy.exc import IntegrityError
 
 app = Flask(__name__)
@@ -39,8 +39,6 @@ def create_user():
     
     return render_template('register.html', form=form)
 
-
-
 @app.route('/login', methods=['GET', 'POST'])
 def login_user():
     form = LoginForm()
@@ -56,16 +54,16 @@ def login_user():
             session['user_id'] = user.id
             return redirect(f'/users/{user.id}')
         else:
-            form.username.errors = ['invalid username / password']
+            flash('user not found, check username/password combination', 'danger')
+            return redirect('/login')
     
     return render_template('/login.html', form=form)
-
-
 
 @app.route('/users/<int:id>')
 def user_profile(id):
     if 'user_id' not in session or id != session['user_id']:
         flash('unauthorized, please log in first', 'danger')
+        session.pop('user_id')
         return redirect('/login')
 
     user = User.query.get(id)
@@ -73,9 +71,86 @@ def user_profile(id):
     
     return render_template("user.html", user=user, form=form)
     
-
+@app.route('/users/<int:id>/delete', methods=['POST'])
+def delete_user(id):
+    if 'user_id' not in session or id != session['user_id']:
+        flash('unauthorized, please log in first', 'danger')
+        session.pop('user_id')
+        return redirect('/login')
+    
+    user = User.query.get(id)
+    db.session.delete(user)
+    db.session.commit()
+    session.pop('user_id')
+    
+    return redirect('/login')
+    
 @app.route('/logout')
-def lougout_user():
+def logout_user():
     session.pop('user_id')
     flash('Succesfully Logged Out', 'success')
     return redirect('/')
+
+@app.route('/users/<int:id>/feedback/new', methods=['GET', 'POST'])
+def add_feedback(id):
+    if 'user_id' not in session or id != session['user_id']:
+        flash('unauthorized, please log in first', 'danger')
+        session.pop('user_id')
+        return redirect('/login')
+    
+    form = FeedbackForm()
+    if form.validate_on_submit():
+        title = form.title.data
+        content = form.content.data
+        
+        user = User.query.get(id)
+        new_feedback = Feedback(title=title, content=content, username=user.username)
+        
+        db.session.add(new_feedback)
+        db.session.commit()
+        
+        return redirect(f"/users/{user.id}")
+    else:
+        return render_template('/add.html', form=form)
+
+@app.route('/feedback/<int:feedback_id>/update', methods = ['GET', 'POST'])
+def update_feedback(feedback_id):
+    feedback = Feedback.query.get(feedback_id)
+    
+    fb_user = User.query.filter_by(username=feedback.username).first()
+    
+    if 'user_id' not in session or fb_user.id != session['user_id']:
+        flash('unauthorized, please log in first', 'danger')
+        session.pop('user_id')
+        return redirect('/login')
+    
+    form = FeedbackForm(obj=feedback)
+
+    if form.validate_on_submit():
+        feedback.title = form.title.data
+        feedback.content = form.content.data
+
+        db.session.commit()
+
+        return redirect(f'/users/{session["user_id"]}')
+
+    return render_template("/update.html", form=form, feedback=feedback)
+    
+@app.route('/feedback/<int:feedback_id>/delete', methods=['POST'])
+def delete_feedback(feedback_id):
+    feedback = Feedback.query.get(feedback_id)
+    
+    fb_user = User.query.filter_by(username=feedback.username).first()
+    
+    if 'user_id' not in session or fb_user.id != session['user_id']:
+        flash('unauthorized, please log in first', 'danger')
+        session.pop('user_id')
+        return redirect('/login')
+    
+    form = DeleteForm()
+
+    if form.validate_on_submit():
+        db.session.delete(feedback)
+        db.session.commit()
+    
+    return redirect(f'/users/{session["user_id"]}')
