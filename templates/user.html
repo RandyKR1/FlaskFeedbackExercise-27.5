@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+ You made it this far
+
+ <form>
+    <button class="btn btn-danger btn-sm"
+            formaction="/users/{{ user.username }}/delete"
+            formmethod="POST">
+      Delete User
+    </button>
+  </form>
+{% endblock %}

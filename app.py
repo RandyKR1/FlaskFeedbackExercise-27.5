@@ -1,7 +1,7 @@
 from flask import Flask, render_template, redirect, session, flash
 from flask_debugtoolbar import DebugToolbarExtension
 from models import connect_db, db, User
-from forms import UserForm, LoginForm
+from forms import UserForm, LoginForm, DeleteForm
 # from sqlalchemy.exc import IntegrityError
 
 app = Flask(__name__)
@@ -54,15 +54,25 @@ def login_user():
         if user:
             flash(f'Welcome back {user.username}!', 'success')
             session['user_id'] = user.id
-            return redirect('/secret')
+            return redirect(f'/users/{user.id}')
         else:
             form.username.errors = ['invalid username / password']
     
     return render_template('/login.html', form=form)
 
-@app.route('/secret')
-def secret():
-    return render_template('/secret.html')
+
+
+@app.route('/users/<int:id>')
+def user_profile(id):
+    if 'user_id' not in session or id != session['user_id']:
+        flash('unauthorized, please log in first', 'danger')
+        return redirect('/login')
+
+    user = User.query.get(id)
+    form = DeleteForm()
+    
+    return render_template("user.html", user=user, form=form)
+    
 
 @app.route('/logout')
 def lougout_user():
