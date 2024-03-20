@@ -6,8 +6,8 @@
 
 </head>
 
-<body>
-  <nav class="navbar navbar-light bg-primary justify-content-between ">
+<body style="background-color: rgba(149, 212, 248, 0.484);">
+  <nav class="navbar navbar-light bg-info justify-content-between ">
     
     <div class="container">
       <a href="/" class="navbar-brand text-light">Feedback Exercise</a>
@@ -16,16 +16,16 @@
 
         {% if session['user_id'] %}
         <li class="nav-item">
-          <a href="#">Logout</a>
+          <a href="/logout" style="color:antiquewhite;">Logout</a>
         </li>
         {% else %}
 
         <li class="nav-item">
-          <a href="#">Login</a>
+          <a href="/login" style="color:antiquewhite; margin-right: 8px;">Login</a>
         </li>
 
         <li class="nav-item">
-          <a href="#">Sign up</a>
+          <a href="/register" style="color:antiquewhite; margin-left: 8px;">Sign up</a>
         </li>
 
         {% endif %}
